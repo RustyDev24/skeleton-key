@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# build_rockyou_sqlite.py
 import hashlib
 import sqlite3
 from pathlib import Path
@@ -7,7 +6,7 @@ import time
 
 ROCKYOU = Path("rockyou.txt")
 DBPATH = Path("rockyou_md5.db")
-BATCH_SIZE = 50000  # tune: larger is faster but uses more memory during insert
+BATCH_SIZE = 100_000
 
 def md5_bytes(b: bytes) -> str:
     return hashlib.md5(b).hexdigest()
@@ -17,12 +16,9 @@ def prepare_db(dbpath: Path):
         print("Reusing existing DB:", dbpath)
     conn = sqlite3.connect(str(dbpath))
     cur = conn.cursor()
-    # Speed tweaks
     cur.execute("PRAGMA synchronous = OFF;")
     cur.execute("PRAGMA journal_mode = WAL;")
     cur.execute("PRAGMA temp_store = MEMORY;")
-    cur.execute("PRAGMA cache_size = -200000;")  # negative => size in KB; tune as needed
-    # Create table; md5 is primary key for fast lookup and uniqueness
     cur.execute("""
     CREATE TABLE IF NOT EXISTS rockyou (
         md5 TEXT PRIMARY KEY,
@@ -63,4 +59,3 @@ if __name__ == "__main__":
     if not ROCKYOU.exists():
         raise SystemExit("rockyou.txt not found in current directory.")
     build_index(ROCKYOU, DBPATH)
-

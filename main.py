@@ -23,10 +23,9 @@ if __name__ == "__main__":
     for t in targets:
         pw = lookup_md5(t)
         if pw is None:
-            print(t, "NOT FOUND")
+            print(f"{t} => Strong Password")
         else:
             try:
-                print(t, "=>", pw.decode("utf-8"))
+                print(f"{t} => Weak Password (password: {pw.decode('utf-8')})")
             except UnicodeDecodeError:
                 print(t, "=>", pw)  # bytes fallback
-
